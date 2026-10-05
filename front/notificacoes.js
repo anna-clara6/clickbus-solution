@@ -10,9 +10,9 @@
 
 const ROTULOS_NOTIFICACAO = {
   solicitado: "Recebemos sua solicitação de cancelamento",
-  em_analise: "Seu reembolso está em análise",
   aprovado: "Seu reembolso foi aprovado",
-  devolvido: "O valor já caiu na sua conta",
+  rejeitado: "Sua solicitação de reembolso foi rejeitada",
+  pago: "O valor do reembolso foi pago",
 };
 
 function notificarMudancaStatus(statusNovo) {

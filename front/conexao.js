@@ -1,10 +1,30 @@
-document.addEventListener("DOMContentLoaded", async () => {
-  const pedidoId = "CB-58231";
-  const dados = await buscarConexao(pedidoId);
-  const analise = analisarConexao(dados.trechos);
+async function carregarConexao(passagemId) {
+  const erro = document.getElementById("erro");
+  erro.hidden = true;
+  try {
+    const trechos = await buscarConexao(passagemId);
+    const analise = analisarConexao(trechos);
+    renderTrechos(trechos, analise);
+    renderResponsavel(analise, trechos.length > 0);
+  } catch (error) {
+    erro.textContent = error.message;
+    erro.hidden = false;
+  }
+}
 
-  renderTrechos(dados.trechos, analise);
-  renderResponsavel(analise);
+document.addEventListener("DOMContentLoaded", () => {
+  const formulario = document.getElementById("form-conexao");
+  const campoId = document.getElementById("passagem-id");
+  formulario.addEventListener("submit", (evento) => {
+    evento.preventDefault();
+    carregarConexao(campoId.value);
+  });
+
+  const passagemId = new URLSearchParams(window.location.search).get("passagem");
+  if (passagemId) {
+    campoId.value = passagemId;
+    carregarConexao(passagemId);
+  }
 });
 
 function renderTrechos(trechos, analise) {
@@ -24,7 +44,7 @@ function renderTrechos(trechos, analise) {
 
     const empresa = document.createElement("p");
     empresa.className = "trecho-item__empresa";
-    empresa.textContent = trecho.viacao;
+    empresa.textContent = trecho.viacao_nome;
 
     const rota = document.createElement("p");
     rota.className = "trecho-item__rota";
@@ -32,17 +52,15 @@ function renderTrechos(trechos, analise) {
 
     const horarios = document.createElement("p");
     horarios.className = "trecho-item__horarios";
-    const previsto = `Previsto: ${formatarDataHora(trecho.partida)} – ${formatarDataHora(trecho.chegadaPrevista)}`;
-    horarios.textContent = trecho.chegadaReal
-      ? `${previsto} · Chegou: ${formatarDataHora(trecho.chegadaReal)}`
-      : previsto;
+    horarios.textContent =
+      `${formatarDataHora(trecho.horario_saida)} – ${formatarDataHora(trecho.horario_chegada)}`;
 
     item.append(empresa, rota, horarios);
 
     if (analise.conexaoPerdida && trecho === analise.trechoResponsavel) {
       const selo = document.createElement("span");
       selo.className = "selo-alerta";
-      selo.textContent = `${analise.atrasoMinutos} min de atraso`;
+      selo.textContent = `${analise.atrasoMinutos} min de conflito`;
       item.appendChild(selo);
     }
 
@@ -50,15 +68,23 @@ function renderTrechos(trechos, analise) {
   });
 }
 
-function renderResponsavel(analise) {
+function renderResponsavel(analise, temTrechos) {
   const painel = document.getElementById("responsavel");
   painel.innerHTML = "";
   painel.hidden = false;
 
+  if (!temTrechos) {
+    painel.className = "responsavel responsavel--ok";
+    const texto = document.createElement("p");
+    texto.textContent = "Nenhum trecho foi cadastrado para esta passagem.";
+    painel.appendChild(texto);
+    return;
+  }
+
   if (!analise.conexaoPerdida) {
     painel.className = "responsavel responsavel--ok";
     const texto = document.createElement("p");
-    texto.textContent = "Sua conexão está dentro do previsto. Nenhuma ação necessária.";
+    texto.textContent = "Os horários programados permitem a conexão.";
     painel.appendChild(texto);
     return;
   }
@@ -67,14 +93,15 @@ function renderResponsavel(analise) {
 
   const titulo = document.createElement("p");
   titulo.className = "responsavel__titulo";
-  titulo.textContent = `Responsável: ${analise.trechoResponsavel.viacao}`;
+  titulo.textContent = `Atenção: ${analise.trechoResponsavel.viacao_nome}`;
   painel.appendChild(titulo);
 
   const descricao = document.createElement("p");
   descricao.className = "responsavel__descricao";
   descricao.textContent =
-    `O atraso de ${analise.atrasoMinutos} min no trecho ${analise.trechoResponsavel.origem} → ` +
-    `${analise.trechoResponsavel.destino} fez você perder a conexão para ${analise.trechoAfetado.destino}.`;
+    `A chegada programada do trecho ${analise.trechoResponsavel.origem} → ` +
+    `${analise.trechoResponsavel.destino} ultrapassa a partida seguinte em ` +
+    `${analise.atrasoMinutos} min. A conexão segue para ${analise.trechoAfetado.destino}.`;
   painel.appendChild(descricao);
 
   const acoes = document.createElement("ul");

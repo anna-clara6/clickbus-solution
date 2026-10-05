@@ -6,13 +6,16 @@ document.getElementById("form-simulador").addEventListener("submit", async (even
   const botao = evento.target.querySelector("button[type=submit]");
 
   botao.disabled = true;
-  botao.textContent = "Calculando…";
-
-  const resultado = await simularReembolso(valorPassagem, dataViagem);
-  renderResultado(resultado);
-
-  botao.disabled = false;
-  botao.textContent = "Calcular reembolso";
+  botao.textContent = "Calculando...";
+  try {
+    const resultado = await simularReembolso(valorPassagem, dataViagem);
+    renderResultado(resultado);
+  } catch (erro) {
+    renderResultado({ elegivel: false, motivo: erro.message });
+  } finally {
+    botao.disabled = false;
+    botao.textContent = "Calcular reembolso";
+  }
 });
 
 function renderResultado(dados) {
@@ -30,14 +33,14 @@ function renderResultado(dados) {
 
   const valorGrande = document.createElement("p");
   valorGrande.className = "resultado__valor";
-  valorGrande.textContent = formatarMoeda(dados.valorReembolso);
+  valorGrande.textContent = formatarMoeda(Number(dados.valor_reembolso));
   painel.appendChild(valorGrande);
 
   const linhas = [
-    ["Valor da passagem", formatarMoeda(dados.valorPassagem)],
-    ["Taxa de serviço retida", formatarMoeda(dados.valorTaxa)],
-    ["Dias até a viagem", `${dados.diasRestantes} dia(s)`],
-    ["Percentual devolvido", `${Math.round(dados.percentualAplicado * 100)}%`],
+    ["Valor da passagem", formatarMoeda(Number(dados.valor_passagem))],
+    ["Taxa de serviço retida", formatarMoeda(Number(dados.valor_taxa))],
+    ["Dias até a viagem", `${dados.dias_restantes} dia(s)`],
+    ["Percentual devolvido", `${Math.round(Number(dados.percentual_aplicado) * 100)}%`],
   ];
 
   linhas.forEach(([rotulo, valor]) => {

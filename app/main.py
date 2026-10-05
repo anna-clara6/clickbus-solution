@@ -1,17 +1,22 @@
 from collections.abc import Generator
 
 from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.database import get_db
 from app.models import (
     ConexaoCreate,
+    ConexaoDetalheResponse,
     ConexaoResponse,
     PassagemCreate,
     PassagemResponse,
     ReembolsoCreate,
+    ReembolsoDetalheResponse,
     ReembolsoResponse,
+    ReembolsoSimulacaoRequest,
+    ReembolsoSimulacaoResponse,
     SolicitacaoCreate,
     SolicitacaoResponse,
     ViacaoCreate,
@@ -27,6 +32,17 @@ from app.services import (
 
 settings = get_settings()
 app = FastAPI(title=settings.app_name, version=settings.app_version)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5500",
+        "http://127.0.0.1:5500",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/", tags=["system"])
@@ -77,12 +93,53 @@ def create_reembolso(data: ReembolsoCreate, session: Session = Depends(database_
         raise service_error(error) from error
 
 
+@app.get("/reembolsos/{reembolso_id}", response_model=ReembolsoDetalheResponse, tags=["reembolsos"])
+def get_reembolso(reembolso_id: int, session: Session = Depends(database_session)) -> ReembolsoDetalheResponse:
+    try:
+        return ReembolsoService(session).get(reembolso_id)
+    except LookupError as error:
+        raise service_error(error) from error
+
+
+@app.post("/reembolsos/simular", response_model=ReembolsoSimulacaoResponse, tags=["reembolsos"])
+def simulate_reembolso(data: ReembolsoSimulacaoRequest) -> ReembolsoSimulacaoResponse:
+    return ReembolsoService.simulate(data)
+
+
 @app.post("/conexoes", response_model=ConexaoResponse, status_code=status.HTTP_201_CREATED, tags=["conexoes"])
 def create_conexao(data: ConexaoCreate, session: Session = Depends(database_session)) -> ConexaoResponse:
     try:
         return ConexaoService(session).create(data)
     except (ValueError, LookupError) as error:
         raise service_error(error) from error
+
+
+@app.get(
+    "/passagens/{passagem_id}/conexoes",
+    response_model=list[ConexaoDetalheResponse],
+    tags=["conexoes"],
+)
+def list_conexoes(passagem_id: int, session: Session = Depends(database_session)) -> list[ConexaoDetalheResponse]:
+    try:
+        passagem = PassagemService(session).get(passagem_id)
+    except LookupError as error:
+        raise service_error(error) from error
+    conexoes = ConexaoService(session).list_by_passagem(passagem_id)
+    return [
+        ConexaoDetalheResponse.model_validate(
+            {
+                "id": conexao.id,
+                "passagem_id": conexao.passagem_id,
+                "origem": conexao.origem,
+                "destino": conexao.destino,
+                "horario_saida": conexao.horario_saida,
+                "horario_chegada": conexao.horario_chegada,
+                "ordem": conexao.ordem,
+                "viacao_nome": passagem.viacao.nome,
+            }
+        )
+        for conexao in conexoes
+    ]
 
 
 @app.post("/solicitacoes", response_model=SolicitacaoResponse, status_code=status.HTTP_201_CREATED, tags=["solicitacoes"])

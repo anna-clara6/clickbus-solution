@@ -4,15 +4,24 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Conexão Perdida — ClickBus</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="page">
     <section class="card">
       <header class="card__header">
         <h1>Sua conexão</h1>
-        <p class="trecho">Veja qual trecho causou o problema</p>
+        <p class="trecho">Consulte os trechos programados da passagem</p>
       </header>
+
+      <form id="form-conexao" class="form-simulador">
+        <div class="field">
+          <label for="passagem-id">ID da passagem</label>
+          <input id="passagem-id" type="number" min="1" required />
+        </div>
+        <button type="submit" class="btn-primary">Consultar</button>
+      </form>
+      <p id="erro" class="resultado__aviso" role="alert" hidden></p>
 
       <ol class="trechos" id="trechos"></ol>
 
@@ -22,9 +31,8 @@
     </section>
   </main>
 
-  <script src="js/utils.js"></script>
-  <script src="js/mock-data.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/conexao.js"></script>
+  <script src="utils.js"></script>
+  <script src="api.js"></script>
+  <script src="conexao.js"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from decimal import Decimal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -43,6 +43,25 @@ class ReembolsoResponse(ReembolsoCreate):
     status: str
 
 
+class ReembolsoDetalheResponse(ReembolsoResponse):
+    passagem: PassagemResponse
+
+
+class ReembolsoSimulacaoRequest(BaseModel):
+    valor_passagem: Decimal = Field(gt=0, max_digits=10, decimal_places=2)
+    data_viagem: date
+
+
+class ReembolsoSimulacaoResponse(BaseModel):
+    elegivel: bool
+    motivo: str | None = None
+    dias_restantes: int
+    valor_passagem: Decimal
+    valor_taxa: Decimal | None = None
+    percentual_aplicado: Decimal | None = None
+    valor_reembolso: Decimal | None = None
+
+
 class ConexaoCreate(BaseModel):
     passagem_id: int
     origem: str = Field(min_length=2, max_length=120)
@@ -55,6 +74,10 @@ class ConexaoCreate(BaseModel):
 class ConexaoResponse(ConexaoCreate):
     model_config = ConfigDict(from_attributes=True)
     id: int
+
+
+class ConexaoDetalheResponse(ConexaoResponse):
+    viacao_nome: str
 
 
 class SolicitacaoCreate(BaseModel):

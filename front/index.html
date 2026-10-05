@@ -4,21 +4,30 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Status do Reembolso — ClickBus</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <main class="page">
     <section class="card" aria-live="polite">
       <header class="card__header">
-        <h1 id="pedido-titulo">Carregando pedido…</h1>
+        <h1 id="pedido-titulo">Consultar reembolso</h1>
         <p id="trecho" class="trecho"></p>
       </header>
+
+      <form id="form-status" class="form-simulador">
+        <div class="field">
+          <label for="reembolso-id">ID do reembolso</label>
+          <input id="reembolso-id" type="number" min="1" required />
+        </div>
+        <button type="submit" class="btn-primary">Consultar</button>
+      </form>
+      <p id="erro" class="resultado__aviso" role="alert" hidden></p>
 
       <ol class="timeline" id="timeline"></ol>
 
       <footer class="card__footer">
         <p>Valor a devolver <strong id="valor">—</strong></p>
-        <p>Previsão de devolução <strong id="previsao">—</strong></p>
+        <p>Status <strong id="status-atual">—</strong></p>
       </footer>
 
       <div class="notificacoes-wrapper">
@@ -28,19 +37,14 @@
         </ul>
       </div>
 
-      <button id="botao-avancar" class="btn-secundario" type="button">
-        Simular próxima etapa (demo)
-      </button>
-
       <a href="simulador.html" class="nav-link">Simular um novo reembolso →</a>
-      <a href="conexao.html" class="nav-link">Ver conexão perdida (demo) →</a>
+      <a href="conexao.html" class="nav-link">Consultar conexão →</a>
     </section>
   </main>
 
-  <script src="js/utils.js"></script>
-  <script src="js/mock-data.js"></script>
-  <script src="js/api.js"></script>
-  <script src="js/notificacoes.js"></script>
-  <script src="js/main.js"></script>
+  <script src="utils.js"></script>
+  <script src="api.js"></script>
+  <script src="notificacoes.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>
