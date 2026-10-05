@@ -1,7 +1,11 @@
 from collections.abc import Generator
+import os
+import re
+from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
@@ -32,6 +36,7 @@ from app.services import (
 
 settings = get_settings()
 app = FastAPI(title=settings.app_name, version=settings.app_version)
+forwarding_domain = os.getenv("GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -40,6 +45,9 @@ app.add_middleware(
         "http://localhost:5173",
         "http://127.0.0.1:5173",
     ],
+    allow_origin_regex=(
+        rf"https://.*\.{re.escape(forwarding_domain)}" if forwarding_domain else None
+    ),
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -156,3 +164,10 @@ def get_solicitacao(solicitacao_id: int, session: Session = Depends(database_ses
         return SolicitacaoService(session).get(solicitacao_id)
     except LookupError as error:
         raise service_error(error) from error
+
+
+app.mount(
+    "/ui",
+    StaticFiles(directory=Path(__file__).resolve().parent.parent / "front", html=True),
+    name="front",
+)
