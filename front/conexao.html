@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Conexão Perdida — ClickBus</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <main class="page">
+    <section class="card">
+      <header class="card__header">
+        <h1>Sua conexão</h1>
+        <p class="trecho">Veja qual trecho causou o problema</p>
+      </header>
+
+      <ol class="trechos" id="trechos"></ol>
+
+      <div id="responsavel" class="responsavel" hidden></div>
+
+      <a href="index.html" class="nav-link">← Ver status do reembolso</a>
+    </section>
+  </main>
+
+  <script src="js/utils.js"></script>
+  <script src="js/mock-data.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/conexao.js"></script>
+</body>
+</html>
