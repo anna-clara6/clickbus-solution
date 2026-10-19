@@ -1,5 +1,4 @@
-from sqlalchemy.orm import Session
-
+from app.core.database import DatabaseSession
 from app.models import Passagem, StatusPassagem
 from app.models.schemas import PassagemCreate
 from app.repositories.passagem_repository import PassagemRepository
@@ -7,7 +6,7 @@ from app.repositories.viacao_repository import ViacaoRepository
 
 
 class PassagemService:
-    def __init__(self, session: Session) -> None:
+    def __init__(self, session: DatabaseSession) -> None:
         self._session = session
         self._repository = PassagemRepository(session)
         self._viacao_repository = ViacaoRepository(session)
@@ -20,7 +19,6 @@ class PassagemService:
             raise ValueError("A viação informada não está disponível")
         entity = self._repository.add(Passagem(**data.model_dump(), status=StatusPassagem.RESERVADA))
         self._session.commit()
-        self._session.refresh(entity)
         return entity
 
     def get(self, passagem_id: int) -> Passagem:
@@ -37,6 +35,6 @@ class PassagemService:
         if entity.status == StatusPassagem.CANCELADA:
             raise ValueError("A passagem já está cancelada")
         entity.status = StatusPassagem.CANCELADA
+        self._repository.update(entity)
         self._session.commit()
-        self._session.refresh(entity)
         return entity

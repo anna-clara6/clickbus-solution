@@ -1,12 +1,12 @@
 # ClickBus
 
-Aplicação de passagens rodoviárias com API FastAPI, SQLAlchemy e interface web
-estática. O FastAPI serve a API e o front-end pelo mesmo host.
+Aplicação de passagens rodoviárias com API FastAPI, SQL MySQL parametrizado e
+interface web estática. O FastAPI serve a API e o front-end pelo mesmo host.
 
 ## Pré-requisitos
 
 - Python 3.11 ou superior.
-- MySQL disponível, ou use o modo SQLite para desenvolvimento local.
+- MySQL 8.0.16 ou superior disponível.
 
 ## Instalação
 
@@ -20,8 +20,9 @@ cp .env.example .env
 ```
 
 Configure `DATABASE_URL` no `.env` antes de inicializar o banco. O valor padrão
-usa `mysql+pymysql` com o banco `clickbus`; confirme que o banco existe e que o
-usuário configurado tem permissão para criar tabelas.
+usa `mysql+pymysql` com o banco `clickbus`; o usuário configurado precisa ter
+permissão para criar o banco e as tabelas. A inicialização cria as tabelas e
+insere os dados de demonstração sem apagar dados existentes.
 
 ## Executar com MySQL
 
@@ -31,19 +32,6 @@ Com o MySQL iniciado e o `.env` configurado:
 python -m app.core.init_db
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
-
-## Executar sem MySQL (SQLite)
-
-No Linux/macOS, use um banco temporário em `/tmp`:
-
-```bash
-export DATABASE_URL=sqlite:////tmp/clickbus-dev.db
-python -m app.core.init_db
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-Execute o comando de inicialização e o servidor no mesmo terminal para manter a
-mesma configuração de banco.
 
 ## Abrir a aplicação
 
@@ -75,8 +63,8 @@ uma solicitação de reembolso sempre referencia uma passagem existente.
 
 ## Organização
 
-- `app/models`: entidades SQLAlchemy e schemas de entrada/saída.
+- `app/models`: entidades e schemas de entrada/saída.
 - `app/repositories`: consultas ao banco de dados.
 - `app/services`: regras de negócio e transações.
-- `app/core`: configurações, conexão e inicialização do banco.
+- `app/core`: configurações, conexão MySQL e inicialização do banco.
 - `front`: páginas, estilos e scripts do navegador.

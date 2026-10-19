@@ -1,8 +1,7 @@
 from datetime import date
 from decimal import Decimal, ROUND_HALF_UP
 
-from sqlalchemy.orm import Session
-
+from app.core.database import DatabaseSession
 from app.models import Reembolso, StatusPassagem, StatusReembolso
 from app.models.schemas import ReembolsoCreate, ReembolsoSimulacaoRequest
 from app.repositories.passagem_repository import PassagemRepository
@@ -16,7 +15,7 @@ class ReembolsoService:
     PERCENTUAL_REEMBOLSO_PARCIAL = Decimal("0.7")
     CENTAVO = Decimal("0.01")
 
-    def __init__(self, session: Session) -> None:
+    def __init__(self, session: DatabaseSession) -> None:
         self._session = session
         self._repository = ReembolsoRepository(session)
         self._passagem_repository = PassagemRepository(session)
@@ -31,7 +30,6 @@ class ReembolsoService:
             raise ValueError("O reembolso não pode exceder o valor da passagem")
         entity = self._repository.add(Reembolso(**data.model_dump(), status=StatusReembolso.SOLICITADO))
         self._session.commit()
-        self._session.refresh(entity)
         return entity
 
     def list_by_passagem(self, passagem_id: int) -> list[Reembolso]:
@@ -41,6 +39,7 @@ class ReembolsoService:
         entity = self._repository.get(reembolso_id)
         if entity is None:
             raise LookupError("Reembolso não encontrado")
+        entity.passagem = self._passagem_repository.get(entity.passagem_id)
         return entity
 
     @classmethod

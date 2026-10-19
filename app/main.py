@@ -6,10 +6,8 @@ from pathlib import Path
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from sqlalchemy.orm import Session
-
 from app.core.config import get_settings
-from app.core.database import get_db
+from app.core.database import DatabaseSession, get_db
 from app.models import (
     ConexaoCreate,
     ConexaoDetalheResponse,
@@ -63,7 +61,7 @@ def health_check() -> dict[str, str]:
     return {"status": "ok"}
 
 
-def database_session() -> Generator[Session, None, None]:
+def database_session() -> Generator[DatabaseSession, None, None]:
     yield from get_db()
 
 
@@ -73,7 +71,7 @@ def service_error(error: ValueError | LookupError) -> HTTPException:
 
 
 @app.post("/viacoes", response_model=ViacaoResponse, status_code=status.HTTP_201_CREATED, tags=["viacoes"])
-def create_viacao(data: ViacaoCreate, session: Session = Depends(database_session)) -> ViacaoResponse:
+def create_viacao(data: ViacaoCreate, session: DatabaseSession = Depends(database_session)) -> ViacaoResponse:
     try:
         return ViacaoService(session).create(data)
     except ValueError as error:
@@ -81,12 +79,12 @@ def create_viacao(data: ViacaoCreate, session: Session = Depends(database_sessio
 
 
 @app.get("/viacoes", response_model=list[ViacaoResponse], tags=["viacoes"])
-def list_viacoes(session: Session = Depends(database_session)) -> list[ViacaoResponse]:
+def list_viacoes(session: DatabaseSession = Depends(database_session)) -> list[ViacaoResponse]:
     return ViacaoService(session).list()
 
 
 @app.post("/passagens", response_model=PassagemResponse, status_code=status.HTTP_201_CREATED, tags=["passagens"])
-def create_passagem(data: PassagemCreate, session: Session = Depends(database_session)) -> PassagemResponse:
+def create_passagem(data: PassagemCreate, session: DatabaseSession = Depends(database_session)) -> PassagemResponse:
     try:
         return PassagemService(session).create(data)
     except (ValueError, LookupError) as error:
@@ -94,7 +92,7 @@ def create_passagem(data: PassagemCreate, session: Session = Depends(database_se
 
 
 @app.post("/reembolsos", response_model=ReembolsoResponse, status_code=status.HTTP_201_CREATED, tags=["reembolsos"])
-def create_reembolso(data: ReembolsoCreate, session: Session = Depends(database_session)) -> ReembolsoResponse:
+def create_reembolso(data: ReembolsoCreate, session: DatabaseSession = Depends(database_session)) -> ReembolsoResponse:
     try:
         return ReembolsoService(session).create(data)
     except (ValueError, LookupError) as error:
@@ -102,7 +100,7 @@ def create_reembolso(data: ReembolsoCreate, session: Session = Depends(database_
 
 
 @app.get("/reembolsos/{reembolso_id}", response_model=ReembolsoDetalheResponse, tags=["reembolsos"])
-def get_reembolso(reembolso_id: int, session: Session = Depends(database_session)) -> ReembolsoDetalheResponse:
+def get_reembolso(reembolso_id: int, session: DatabaseSession = Depends(database_session)) -> ReembolsoDetalheResponse:
     try:
         return ReembolsoService(session).get(reembolso_id)
     except LookupError as error:
@@ -115,7 +113,7 @@ def simulate_reembolso(data: ReembolsoSimulacaoRequest) -> ReembolsoSimulacaoRes
 
 
 @app.post("/conexoes", response_model=ConexaoResponse, status_code=status.HTTP_201_CREATED, tags=["conexoes"])
-def create_conexao(data: ConexaoCreate, session: Session = Depends(database_session)) -> ConexaoResponse:
+def create_conexao(data: ConexaoCreate, session: DatabaseSession = Depends(database_session)) -> ConexaoResponse:
     try:
         return ConexaoService(session).create(data)
     except (ValueError, LookupError) as error:
@@ -127,7 +125,7 @@ def create_conexao(data: ConexaoCreate, session: Session = Depends(database_sess
     response_model=list[ConexaoDetalheResponse],
     tags=["conexoes"],
 )
-def list_conexoes(passagem_id: int, session: Session = Depends(database_session)) -> list[ConexaoDetalheResponse]:
+def list_conexoes(passagem_id: int, session: DatabaseSession = Depends(database_session)) -> list[ConexaoDetalheResponse]:
     try:
         passagem = PassagemService(session).get(passagem_id)
     except LookupError as error:
@@ -151,7 +149,7 @@ def list_conexoes(passagem_id: int, session: Session = Depends(database_session)
 
 
 @app.post("/solicitacoes", response_model=SolicitacaoResponse, status_code=status.HTTP_201_CREATED, tags=["solicitacoes"])
-def create_solicitacao(data: SolicitacaoCreate, session: Session = Depends(database_session)) -> SolicitacaoResponse:
+def create_solicitacao(data: SolicitacaoCreate, session: DatabaseSession = Depends(database_session)) -> SolicitacaoResponse:
     try:
         return SolicitacaoService(session).create(data)
     except (ValueError, LookupError) as error:
@@ -159,7 +157,7 @@ def create_solicitacao(data: SolicitacaoCreate, session: Session = Depends(datab
 
 
 @app.get("/solicitacoes/{solicitacao_id}", response_model=SolicitacaoResponse, tags=["solicitacoes"])
-def get_solicitacao(solicitacao_id: int, session: Session = Depends(database_session)) -> SolicitacaoResponse:
+def get_solicitacao(solicitacao_id: int, session: DatabaseSession = Depends(database_session)) -> SolicitacaoResponse:
     try:
         return SolicitacaoService(session).get(solicitacao_id)
     except LookupError as error:

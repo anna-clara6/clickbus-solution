@@ -1,29 +1,62 @@
+from dataclasses import fields
 from typing import Generic, TypeVar
 
-from sqlalchemy import select
-from sqlalchemy.orm import Session
+from app.core.database import DatabaseSession
 
-from app.core.database import Base
-
-ModelT = TypeVar("ModelT", bound=Base)
+ModelT = TypeVar("ModelT")
 
 
 class Repository(Generic[ModelT]):
-    def __init__(self, session: Session, model: type[ModelT]) -> None:
+    def __init__(self, session: DatabaseSession, model: type[ModelT], table: str) -> None:
         self._session = session
         self._model = model
+        self._table = table
 
     def get(self, entity_id: int) -> ModelT | None:
-        return self._session.get(self._model, entity_id)
+        with self._session.cursor() as cursor:
+            cursor.execute(f"SELECT * FROM {self._table} WHERE id = %s", (entity_id,))
+            row = cursor.fetchone()
+        return self._model(**row) if row else None
 
     def list(self, *, offset: int = 0, limit: int = 100) -> list[ModelT]:
-        statement = select(self._model).offset(offset).limit(limit)
-        return list(self._session.scalars(statement).all())
+        with self._session.cursor() as cursor:
+            cursor.execute(
+                f"SELECT * FROM {self._table} ORDER BY id LIMIT %s OFFSET %s",
+                (limit, offset),
+            )
+            rows = cursor.fetchall()
+        return [self._model(**row) for row in rows]
 
     def add(self, entity: ModelT) -> ModelT:
-        self._session.add(entity)
-        self._session.flush()
+        values = {
+            field.name: getattr(entity, field.name)
+            for field in fields(entity)
+            if field.name != "id" and getattr(entity, field.name) is not None
+        }
+        columns = ", ".join(values)
+        placeholders = ", ".join(["%s"] * len(values))
+        with self._session.cursor() as cursor:
+            cursor.execute(
+                f"INSERT INTO {self._table} ({columns}) VALUES ({placeholders})",
+                tuple(values.values()),
+            )
+            entity.id = cursor.lastrowid
         return entity
 
     def delete(self, entity: ModelT) -> None:
-        self._session.delete(entity)
+        with self._session.cursor() as cursor:
+            cursor.execute(f"DELETE FROM {self._table} WHERE id = %s", (entity.id,))
+
+    def update(self, entity: ModelT) -> ModelT:
+        values = {
+            field.name: getattr(entity, field.name)
+            for field in fields(entity)
+            if field.name not in {"id", "viacao", "passagem"}
+        }
+        assignments = ", ".join(f"{column} = %s" for column in values)
+        with self._session.cursor() as cursor:
+            cursor.execute(
+                f"UPDATE {self._table} SET {assignments} WHERE id = %s",
+                (*values.values(), entity.id),
+            )
+        return entity

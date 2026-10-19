@@ -1,27 +1,35 @@
-from sqlalchemy.orm import Session
-
-from app.models import Solicitacao, SolicitacaoPassagem, SolicitacaoReembolso
+from app.core.database import DatabaseSession
+from app.models import Solicitacao
 from app.models.schemas import SolicitacaoCreate
+from app.repositories.passagem_repository import PassagemRepository
+from app.repositories.reembolso_repository import ReembolsoRepository
 from app.repositories.solicitacao_repository import SolicitacaoRepository
 
 
 class SolicitacaoService:
-    def __init__(self, session: Session) -> None:
+    def __init__(self, session: DatabaseSession) -> None:
         self._session = session
         self._repository = SolicitacaoRepository(session)
+        self._passagem_repository = PassagemRepository(session)
+        self._reembolso_repository = ReembolsoRepository(session)
 
     def create(self, data: SolicitacaoCreate) -> Solicitacao:
         if data.tipo == "passagem":
-            entity = SolicitacaoPassagem(passagem_id=data.passagem_id)
+            if data.passagem_id is None:
+                raise ValueError("A solicitação precisa referenciar uma passagem")
+            if self._passagem_repository.get(data.passagem_id) is None:
+                raise LookupError("Passagem não encontrada")
+            referencia_id = data.passagem_id
         elif data.tipo == "reembolso":
-            entity = SolicitacaoReembolso(reembolso_id=data.reembolso_id)
+            if data.reembolso_id is None:
+                raise ValueError("A solicitação precisa referenciar um reembolso")
+            if self._reembolso_repository.get(data.reembolso_id) is None:
+                raise LookupError("Reembolso não encontrado")
+            referencia_id = data.reembolso_id
         else:
             raise ValueError("Tipo de solicitação inválido")
-        if entity.passagem_id is None and entity.reembolso_id is None:
-            raise ValueError("A solicitação precisa referenciar uma entidade")
-        self._repository.add(entity)
+        entity = self._repository.create(data.tipo, referencia_id)
         self._session.commit()
-        self._session.refresh(entity)
         return entity
 
     def get(self, solicitacao_id: int) -> Solicitacao:
