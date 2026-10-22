@@ -31,6 +31,10 @@ class PassagemResponse(PassagemCreate):
     status: str
 
 
+class PassagemFotoIdentificacaoResponse(BaseModel):
+    passagem_id: int | None
+
+
 class ReembolsoCreate(BaseModel):
     passagem_id: int
     motivo: str = Field(min_length=3)

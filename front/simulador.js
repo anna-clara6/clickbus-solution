@@ -1,7 +1,36 @@
+const campoValorPassagem = document.getElementById("valor-passagem");
+
+function validarValorPassagem(digitos) {
+  campoValorPassagem.setCustomValidity(
+    digitos.length > 10
+      ? "O valor máximo é R$ 99.999.999,99."
+      : Number(digitos.padStart(3, "0")) === 0
+        ? "Informe um valor maior que R$ 0,00."
+        : "",
+  );
+}
+
+campoValorPassagem.addEventListener("focus", () => {
+  campoValorPassagem.select();
+});
+
+campoValorPassagem.addEventListener("input", () => {
+  const digitos = campoValorPassagem.value.replace(/\D/g, "").replace(/^0+(?=\d)/, "");
+  const centavos = digitos.padStart(3, "0");
+  const reais = centavos.slice(0, -2).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  campoValorPassagem.value = `${reais},${centavos.slice(-2)}`;
+  validarValorPassagem(digitos);
+  campoValorPassagem.setSelectionRange(campoValorPassagem.value.length, campoValorPassagem.value.length);
+});
+
+validarValorPassagem(campoValorPassagem.value.replace(/\D/g, ""));
+
 document.getElementById("form-simulador").addEventListener("submit", async (evento) => {
   evento.preventDefault();
 
-  const valorPassagem = Number(document.getElementById("valor-passagem").value);
+  const valorPassagem = Number(
+    campoValorPassagem.value.replace(/\./g, "").replace(",", "."),
+  );
   const dataViagem = document.getElementById("data-viagem").value;
   const botao = evento.target.querySelector("button[type=submit]");
 

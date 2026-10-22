@@ -34,6 +34,15 @@ function buscarConexao(passagemId) {
   return requisitarApi(`/passagens/${encodeURIComponent(passagemId)}/conexoes`);
 }
 
+function identificarPassagemPorFoto(foto) {
+  const dados = new FormData();
+  dados.append("foto", foto);
+  return requisitarApi("/passagens/identificar-foto", {
+    method: "POST",
+    body: dados,
+  });
+}
+
 // Hoje calculado aqui no front; no sistema real isso é a classe Conexão
 // do back, comparando o horário de chegada de um trecho com o horário
 // de partida do próximo.

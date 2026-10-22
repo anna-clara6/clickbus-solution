@@ -7,6 +7,8 @@ interface web estática. O FastAPI serve a API e o front-end pelo mesmo host.
 
 - Python 3.11 ou superior.
 - MySQL 8.0.16 ou superior disponível.
+- Tesseract OCR instalado, incluindo os idiomas português (`por`) e inglês
+  (`eng`), para sugerir o ID da passagem a partir da foto.
 
 ## Instalação
 
@@ -17,6 +19,12 @@ python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 cp .env.example .env
+```
+
+No Debian/Ubuntu, instale o mecanismo OCR antes de iniciar a aplicação:
+
+```bash
+sudo apt-get install tesseract-ocr tesseract-ocr-por
 ```
 
 Configure `DATABASE_URL` no `.env` antes de inicializar o banco. O valor padrão
@@ -59,6 +67,10 @@ uma solicitação de reembolso sempre referencia uma passagem existente.
 - `GET /reembolsos/{id}`: consulta o reembolso e os dados da passagem.
 - `POST /reembolsos/simular`: calcula a estimativa de reembolso.
 - `GET /passagens/{id}/conexoes`: lista os trechos programados da passagem.
+- `POST /passagens/identificar-foto`: tenta sugerir um ID a partir de uma foto
+  JPEG, PNG ou WebP de até 5 MB. A imagem não é salva pela aplicação; o ID
+  é sugerido quando a imagem contém uma única sequência distinta de exatamente
+  cinco dígitos, e precisa ser conferido e consultado manualmente.
 - `POST /viacoes`, `/passagens`, `/reembolsos` e `/conexoes`: cria os registros.
 
 ## Organização

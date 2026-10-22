@@ -3,9 +3,12 @@ import os
 import re
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, HTTPException, status
+import pytesseract
+from fastapi import Depends, FastAPI, File, HTTPException, UploadFile, status
+from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+
 from app.core.config import get_settings
 from app.core.database import DatabaseSession, get_db
 from app.models import (
@@ -13,6 +16,7 @@ from app.models import (
     ConexaoDetalheResponse,
     ConexaoResponse,
     PassagemCreate,
+    PassagemFotoIdentificacaoResponse,
     PassagemResponse,
     ReembolsoCreate,
     ReembolsoDetalheResponse,
@@ -31,6 +35,7 @@ from app.services import (
     SolicitacaoService,
     ViacaoService,
 )
+from app.services.passagem_ocr_service import PassagemOcrService
 
 settings = get_settings()
 app = FastAPI(title=settings.app_name, version=settings.app_version)
@@ -89,6 +94,34 @@ def create_passagem(data: PassagemCreate, session: DatabaseSession = Depends(dat
         return PassagemService(session).create(data)
     except (ValueError, LookupError) as error:
         raise service_error(error) from error
+
+
+@app.post(
+    "/passagens/identificar-foto",
+    response_model=PassagemFotoIdentificacaoResponse,
+    tags=["passagens"],
+)
+async def identificar_passagem_por_foto(
+    foto: UploadFile = File(...),
+) -> PassagemFotoIdentificacaoResponse:
+    try:
+        conteudo = await foto.read(PassagemOcrService.MAX_IMAGE_SIZE_BYTES + 1)
+        passagem_id = await run_in_threadpool(PassagemOcrService.identificar, conteudo)
+    except ValueError as error:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(error)) from error
+    except pytesseract.TesseractNotFoundError as error:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="O reconhecimento de imagem não está disponível no servidor",
+        ) from error
+    except (pytesseract.TesseractError, RuntimeError) as error:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Não foi possível concluir o reconhecimento da imagem",
+        ) from error
+    finally:
+        await foto.close()
+    return PassagemFotoIdentificacaoResponse(passagem_id=passagem_id)
 
 
 @app.post("/reembolsos", response_model=ReembolsoResponse, status_code=status.HTTP_201_CREATED, tags=["reembolsos"])

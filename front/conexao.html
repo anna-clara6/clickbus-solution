@@ -19,6 +19,19 @@
           <label for="passagem-id">ID da passagem</label>
           <input id="passagem-id" type="number" min="1" required />
         </div>
+        <div class="field">
+          <label for="foto-passagem">Foto do bilhete (opcional)</label>
+          <input
+            id="foto-passagem"
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            capture="environment"
+            aria-describedby="foto-passagem-ajuda"
+          />
+          <small id="foto-passagem-ajuda">Envie uma foto nítida (JPEG, PNG ou WebP) de até 5 MB. O ID lido é apenas uma sugestão; a imagem não é armazenada.</small>
+          <img id="previa-foto-passagem" class="foto-passagem__previa" alt="Prévia da foto do bilhete" hidden />
+          <p id="status-foto-passagem" role="status" aria-live="polite" hidden></p>
+        </div>
         <button type="submit" class="btn-primary">Consultar</button>
       </form>
       <p id="erro" class="resultado__aviso" role="alert" hidden></p>

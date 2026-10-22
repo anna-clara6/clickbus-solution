@@ -15,6 +15,52 @@ async function carregarConexao(passagemId) {
 document.addEventListener("DOMContentLoaded", () => {
   const formulario = document.getElementById("form-conexao");
   const campoId = document.getElementById("passagem-id");
+  const campoFoto = document.getElementById("foto-passagem");
+  const previaFoto = document.getElementById("previa-foto-passagem");
+  const statusFoto = document.getElementById("status-foto-passagem");
+  let urlPreviaFoto;
+
+  campoFoto.addEventListener("change", async () => {
+    const foto = campoFoto.files[0];
+    statusFoto.hidden = true;
+    previaFoto.hidden = true;
+    if (urlPreviaFoto) {
+      URL.revokeObjectURL(urlPreviaFoto);
+      urlPreviaFoto = undefined;
+    }
+    if (!foto) return;
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(foto.type)) {
+      campoFoto.value = "";
+      mostrarStatusFoto("Selecione uma imagem JPEG, PNG ou WebP.");
+      return;
+    }
+    if (foto.size > 5 * 1024 * 1024) {
+      campoFoto.value = "";
+      mostrarStatusFoto("A imagem deve ter no máximo 5 MB.");
+      return;
+    }
+
+    urlPreviaFoto = URL.createObjectURL(foto);
+    previaFoto.src = urlPreviaFoto;
+    previaFoto.hidden = false;
+    mostrarStatusFoto("Analisando a foto...");
+    campoFoto.disabled = true;
+    try {
+      const resultado = await identificarPassagemPorFoto(foto);
+      if (resultado.passagem_id) {
+        campoId.value = resultado.passagem_id;
+        mostrarStatusFoto(`ID sugerido: ${resultado.passagem_id}. Confira o número antes de consultar.`);
+      } else {
+        mostrarStatusFoto("Não foi possível identificar uma sequência única de cinco dígitos. Digite o ID manualmente.");
+      }
+    } catch (error) {
+      mostrarStatusFoto(`Não foi possível analisar a foto: ${error.message} Você ainda pode digitar o ID.`);
+    } finally {
+      campoFoto.disabled = false;
+    }
+  });
+
   formulario.addEventListener("submit", (evento) => {
     evento.preventDefault();
     carregarConexao(campoId.value);
@@ -26,6 +72,12 @@ document.addEventListener("DOMContentLoaded", () => {
     carregarConexao(passagemId);
   }
 });
+
+function mostrarStatusFoto(mensagem) {
+  const statusFoto = document.getElementById("status-foto-passagem");
+  statusFoto.textContent = mensagem;
+  statusFoto.hidden = false;
+}
 
 function renderTrechos(trechos, analise) {
   const lista = document.getElementById("trechos");
