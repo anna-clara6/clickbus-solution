@@ -32,14 +32,33 @@ usa `mysql+pymysql` com o banco `clickbus`; o usuário configurado precisa ter
 permissão para criar o banco e as tabelas. A inicialização cria as tabelas e
 insere os dados de demonstração sem apagar dados existentes.
 
-## Executar com MySQL
+## Iniciar a aplicação
 
-Com o MySQL iniciado e o `.env` configurado:
+O projeto ainda não possui `Dockerfile` nem `docker-compose.yml`; portanto, o
+comando de inicialização não usa Docker. Primeiro, deixe um servidor MySQL
+8.0.16 ou superior em execução e configure `DATABASE_URL` no `.env`. O usuário
+do banco precisa ter permissão para criar o banco e as tabelas.
+
+Na raiz do projeto, ative o ambiente virtual e inicialize o banco:
 
 ```bash
+source .venv/bin/activate
 python -m app.core.init_db
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
+
+Depois, inicie a API e a interface web:
+
+```bash
+python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Mantenha esse terminal aberto enquanto usa a aplicação. O `--reload` reinicia
+o servidor automaticamente quando arquivos Python são alterados. Para parar,
+use `Ctrl+C`.
+
+Se o ambiente virtual ainda não foi criado ou configurado, siga primeiro os
+passos da seção [Instalação](#instalação). O MySQL precisa ser iniciado
+separadamente, usando o serviço instalado no seu sistema.
 
 ## Abrir a aplicação
 

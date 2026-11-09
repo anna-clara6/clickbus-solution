@@ -1,6 +1,6 @@
 const codespacesHost = window.location.hostname.match(/^(.*)-\d+(\.app\.github\.dev)$/);
 const API_BASE_URL = window.CLICKBUS_API_URL || (codespacesHost
-  ? `${window.location.protocol}//${codespacesHost[1]}-8000${codespacesHost[2]}`
+  ? window.location.origin
   : "http://localhost:8000");
 
 async function requisitarApi(caminho, opcoes = {}) {
