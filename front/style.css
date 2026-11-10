@@ -496,3 +496,15 @@ body {
     margin-left: 0.75rem;
   }
 }
+
+/* Etapa "Rejeitado" da linha do tempo */
+
+.timeline__step--rejeitado .timeline__marker {
+  background: var(--color-alerta);
+  border-color: var(--color-alerta);
+  color: #fff;
+}
+
+.timeline__step--rejeitado .timeline__label {
+  color: var(--color-alerta);
+}
