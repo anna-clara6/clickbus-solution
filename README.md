@@ -90,6 +90,10 @@ uma solicitação de reembolso sempre referencia uma passagem existente.
   JPEG, PNG ou WebP de até 5 MB. A imagem não é salva pela aplicação; o ID
   é sugerido quando a imagem contém uma única sequência distinta de exatamente
   cinco dígitos, e precisa ser conferido e consultado manualmente.
+- `POST /verificacoes`: recebe selfie e documento em JPEG de até 5 MB cada,
+  exige consentimento e valida o reembolso informado, se houver. As imagens são
+  validadas durante a requisição e descartadas; o recibo retornado não representa
+  uma análise de identidade nem é persistido.
 - `POST /viacoes`, `/passagens`, `/reembolsos` e `/conexoes`: cria os registros.
 
 ## Organização

@@ -1,5 +1,7 @@
 from datetime import date, datetime
 from decimal import Decimal
+from typing import Literal
+from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -33,6 +35,11 @@ class PassagemResponse(PassagemCreate):
 
 class PassagemFotoIdentificacaoResponse(BaseModel):
     passagem_id: int | None
+
+
+class VerificacaoResponse(BaseModel):
+    id: UUID
+    status: Literal["recebido"]
 
 
 class ReembolsoCreate(BaseModel):

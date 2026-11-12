@@ -4,12 +4,12 @@
 // Comparar o rosto com o documento precisa ser feito no back-end ou por um serviço
 // próprio de verificação. Aqui a tela deixa o fluxo pronto para essa integração.
 //
-// Contrato proposto para o back (ainda não existe):
+// Contrato do back:
 //   POST /verificacoes  (multipart/form-data)
 //     selfie, documento  -> arquivos JPEG
 //     consentimento      -> "true"
 //     reembolso_id       -> opcional
-//   201 -> { "id": 1, "status": "em_analise" }
+//   201 -> { "id": "<recibo>", "status": "recebido" }
 // Se a rota ainda não existir (404/405), a tela roda em modo demonstração.
 
 const PASSOS = [
@@ -296,8 +296,11 @@ function mostrarSucesso(resultado) {
 
   el("sucesso-texto").textContent = resultado.demo
     ? "Seguimos com o pedido para a próxima etapa."
-    : "Recebemos sua selfie e seu documento. Sua verificação está em análise.";
-  el("aviso-demo").hidden = !resultado.demo;
+    : `Recebemos as imagens (recibo ${resultado.id}). Este protótipo ainda não realiza a análise de identidade.`;
+  el("aviso-demo").textContent = resultado.demo
+    ? "Modo demonstração: o back-end ainda não recebe nem guarda as imagens. Nenhuma foto foi enviada."
+    : "As imagens foram validadas durante o envio e descartadas; este protótipo não armazena as fotos.";
+  el("aviso-demo").hidden = false;
   if (estado.reembolsoId) {
     el("link-status").href = `index.html?reembolso=${encodeURIComponent(estado.reembolsoId)}`;
   }

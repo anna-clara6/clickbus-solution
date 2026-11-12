@@ -24,6 +24,7 @@ from app.models.schemas import (
     ReembolsoSimulacaoResponse,
     SolicitacaoCreate,
     SolicitacaoResponse,
+    VerificacaoResponse,
     ViacaoCreate,
     ViacaoResponse,
 )
@@ -51,6 +52,7 @@ __all__ = [
     "StatusPassagem",
     "StatusReembolso",
     "StatusSolicitacao",
+    "VerificacaoResponse",
     "Viacao",
     "ViacaoCreate",
     "ViacaoResponse",

@@ -2,9 +2,10 @@ from collections.abc import Generator
 import os
 import re
 from pathlib import Path
+from uuid import uuid4
 
 import pytesseract
-from fastapi import Depends, FastAPI, File, HTTPException, UploadFile, status
+from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile, status
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -25,6 +26,7 @@ from app.models import (
     ReembolsoSimulacaoResponse,
     SolicitacaoCreate,
     SolicitacaoResponse,
+    VerificacaoResponse,
     ViacaoCreate,
     ViacaoResponse,
 )
@@ -36,6 +38,7 @@ from app.services import (
     ViacaoService,
 )
 from app.services.passagem_ocr_service import PassagemOcrService
+from app.services.verificacao_service import VerificacaoService
 
 settings = get_settings()
 app = FastAPI(title=settings.app_name, version=settings.app_version)
@@ -143,6 +146,49 @@ def get_reembolso(reembolso_id: int, session: DatabaseSession = Depends(database
 @app.post("/reembolsos/simular", response_model=ReembolsoSimulacaoResponse, tags=["reembolsos"])
 def simulate_reembolso(data: ReembolsoSimulacaoRequest) -> ReembolsoSimulacaoResponse:
     return ReembolsoService.simulate(data)
+
+
+@app.post(
+    "/verificacoes",
+    response_model=VerificacaoResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["verificacoes"],
+)
+async def create_verificacao(
+    selfie: UploadFile = File(...),
+    documento: UploadFile = File(...),
+    consentimento: bool = Form(...),
+    reembolso_id: int | None = Form(None),
+    session: DatabaseSession = Depends(database_session),
+) -> VerificacaoResponse:
+    try:
+        if not consentimento:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="O consentimento é obrigatório",
+            )
+        if reembolso_id is not None:
+            try:
+                ReembolsoService(session).get(reembolso_id)
+            except LookupError as error:
+                raise service_error(error) from error
+
+        imagens = (
+            await selfie.read(VerificacaoService.MAX_IMAGE_SIZE_BYTES + 1),
+            await documento.read(VerificacaoService.MAX_IMAGE_SIZE_BYTES + 1),
+        )
+        for imagem in imagens:
+            VerificacaoService.validar_imagem(imagem)
+    except ValueError as error:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(error),
+        ) from error
+    finally:
+        await selfie.close()
+        await documento.close()
+
+    return VerificacaoResponse(id=uuid4(), status="recebido")
 
 
 @app.post("/conexoes", response_model=ConexaoResponse, status_code=status.HTTP_201_CREATED, tags=["conexoes"])
