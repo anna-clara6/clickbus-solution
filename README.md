@@ -46,12 +46,13 @@ source .venv/bin/activate
 python -m app.core.init_db
 ```
 
-Depois, inicie a API e a interface web:
+Depois, com o ambiente virtual ativado, inicie a API e a interface web:
 
 ```bash
-python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+npm start
 ```
 
+O comando inicia o backend FastAPI, que também serve o front-end em `/ui/`.
 Mantenha esse terminal aberto enquanto usa a aplicação. O `--reload` reinicia
 o servidor automaticamente quando arquivos Python são alterados. Para parar,
 use `Ctrl+C`.
