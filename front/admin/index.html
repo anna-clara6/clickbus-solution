@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Administração de reembolsos — ClickBus</title>
+  <link rel="stylesheet" href="../style.css" />
+</head>
+<body>
+  <main class="page admin-page">
+    <section class="card admin-card">
+      <header class="card__header">
+        <h1>Administração de reembolsos</h1>
+        <p class="trecho">Consulte e atualize o status das solicitações.</p>
+      </header>
+
+      <p id="mensagem" class="admin-message" role="status" aria-live="polite"></p>
+      <p id="erro" class="resultado__aviso" role="alert" hidden></p>
+
+      <div class="admin-table-wrapper">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th scope="col">Reembolso</th>
+              <th scope="col">Passagem</th>
+              <th scope="col">Motivo</th>
+              <th scope="col">Valor</th>
+              <th scope="col">Solicitado em</th>
+              <th scope="col">Status</th>
+              <th scope="col">Ação</th>
+            </tr>
+          </thead>
+          <tbody id="reembolsos"></tbody>
+        </table>
+      </div>
+
+      <a href="../index.html" class="nav-link">← Voltar à consulta de reembolso</a>
+    </section>
+  </main>
+
+  <script src="../utils.js"></script>
+  <script src="../api.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>

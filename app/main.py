@@ -19,11 +19,13 @@ from app.models import (
     PassagemCreate,
     PassagemFotoIdentificacaoResponse,
     PassagemResponse,
+    ReembolsoAdminResponse,
     ReembolsoCreate,
     ReembolsoDetalheResponse,
     ReembolsoResponse,
     ReembolsoSimulacaoRequest,
     ReembolsoSimulacaoResponse,
+    ReembolsoStatusUpdate,
     SolicitacaoCreate,
     SolicitacaoResponse,
     VerificacaoResponse,
@@ -139,6 +141,40 @@ def create_reembolso(data: ReembolsoCreate, session: DatabaseSession = Depends(d
 def get_reembolso(reembolso_id: int, session: DatabaseSession = Depends(database_session)) -> ReembolsoDetalheResponse:
     try:
         return ReembolsoService(session).get(reembolso_id)
+    except LookupError as error:
+        raise service_error(error) from error
+
+
+@app.get(
+    "/admin/reembolsos",
+    response_model=list[ReembolsoAdminResponse],
+    tags=["admin"],
+)
+def list_admin_reembolsos(
+    session: DatabaseSession = Depends(database_session),
+) -> list[ReembolsoAdminResponse]:
+    return [
+        ReembolsoAdminResponse.model_validate(reembolso)
+        for reembolso in ReembolsoService(session).list_all()
+    ]
+
+
+@app.patch(
+    "/admin/reembolsos/{reembolso_id}",
+    response_model=ReembolsoAdminResponse,
+    tags=["admin"],
+)
+def update_admin_reembolso_status(
+    reembolso_id: int,
+    data: ReembolsoStatusUpdate,
+    session: DatabaseSession = Depends(database_session),
+) -> ReembolsoAdminResponse:
+    try:
+        reembolso = ReembolsoService(session).update_status(
+            reembolso_id,
+            data.status,
+        )
+        return ReembolsoAdminResponse.model_validate(reembolso)
     except LookupError as error:
         raise service_error(error) from error
 

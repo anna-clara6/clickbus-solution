@@ -508,3 +508,56 @@ body {
 .timeline__step--rejeitado .timeline__label {
   color: var(--color-alerta);
 }
+
+/* Administração de reembolsos */
+
+.admin-page {
+  align-items: flex-start;
+}
+
+.admin-card {
+  max-width: 1200px;
+}
+
+.admin-message {
+  min-height: 1.25rem;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+}
+
+.admin-table-wrapper {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.admin-table th,
+.admin-table td {
+  padding: 0.7rem;
+  border-bottom: 1px solid var(--color-line);
+  text-align: left;
+  vertical-align: middle;
+}
+
+.admin-table th {
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.admin-table select {
+  min-width: 9rem;
+  padding: 0.5rem;
+  border: 1px solid var(--color-line);
+  border-radius: 6px;
+  font: inherit;
+}
+
+.admin-save {
+  margin: 0;
+  padding: 0.5rem 0.7rem;
+  font-size: 0.85rem;
+}

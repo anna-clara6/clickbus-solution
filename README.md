@@ -6,6 +6,8 @@ interface web estática. O FastAPI serve a API e o front-end pelo mesmo host.
 ## Pré-requisitos
 
 - Python 3.11 ou superior.
+- Node.js 20.6 ou superior, para carregar `.env` e executar `npm start`.
+- Docker em execução, para iniciar o MySQL local automaticamente.
 - MySQL 8.0.16 ou superior disponível.
 - Tesseract OCR instalado, incluindo os idiomas português (`por`) e inglês
   (`eng`), para sugerir o ID da passagem a partir da foto.
@@ -30,36 +32,33 @@ sudo apt-get install tesseract-ocr tesseract-ocr-por
 Configure `DATABASE_URL` no `.env` antes de inicializar o banco. O valor padrão
 usa `mysql+pymysql` com o banco `clickbus`; o usuário configurado precisa ter
 permissão para criar o banco e as tabelas. A inicialização cria as tabelas e
-insere os dados de demonstração sem apagar dados existentes.
+insere dados de demonstração (passagens e reembolsos com IDs de 1 a 5, além
+das conexões correspondentes) sem apagar dados existentes.
 
 ## Iniciar a aplicação
 
-O projeto ainda não possui `Dockerfile` nem `docker-compose.yml`; portanto, o
-comando de inicialização não usa Docker. Primeiro, deixe um servidor MySQL
-8.0.16 ou superior em execução e configure `DATABASE_URL` no `.env`. O usuário
-do banco precisa ter permissão para criar o banco e as tabelas.
-
-Na raiz do projeto, ative o ambiente virtual e inicialize o banco:
-
-```bash
-source .venv/bin/activate
-python -m app.core.init_db
-```
-
-Depois, com o ambiente virtual ativado, inicie a API e a interface web:
+`npm start` inicia um MySQL 8.4 local em Docker quando `DATABASE_URL` aponta
+para `localhost` (ou `127.0.0.1`), aguarda o banco ficar pronto, cria as tabelas
+e os dados iniciais e, em seguida, inicia a API e o frontend. O banco usa o
+volume Docker `clickbus-mysql-data`, preservado entre reinicializações.
 
 ```bash
 npm start
 ```
 
-O comando inicia o backend FastAPI, que também serve o front-end em `/ui/`.
+É necessário ter Docker em execução, Node.js, dependências Python instaladas e
+`DATABASE_URL` configurada no `.env`. A URL padrão usa o usuário e senha locais
+`clickbus`; defina `MYSQL_ROOT_PASSWORD` no ambiente para substituir a senha
+local inicial do root do container. Se `DATABASE_URL` apontar para outro host,
+o script usa esse banco externo sem iniciar um container MySQL.
+
 Mantenha esse terminal aberto enquanto usa a aplicação. O `--reload` reinicia
 o servidor automaticamente quando arquivos Python são alterados. Para parar,
 use `Ctrl+C`.
 
-Se o ambiente virtual ainda não foi criado ou configurado, siga primeiro os
-passos da seção [Instalação](#instalação). O MySQL precisa ser iniciado
-separadamente, usando o serviço instalado no seu sistema.
+Para preparar o ambiente pela primeira vez, siga os passos da seção
+[Instalação](#instalação). O banco e suas tabelas são inicializados pelo próprio
+`npm start`.
 
 ## Abrir a aplicação
 
@@ -75,8 +74,14 @@ interface usa a mesma origem da API, sem depender do `localhost` do navegador.
 As páginas também podem ser abertas diretamente:
 
 - Status do reembolso: `/ui/?reembolso=<id>` ou informe o ID na página.
+- Administração de reembolsos: `/ui/admin/`.
 - Simulador: `/ui/simulador.html`.
 - Conexões da passagem: `/ui/conexao.html?passagem=<id>` ou informe o ID na página.
+
+Na tela de administração é possível listar todos os reembolsos e alterar o
+status para solicitado, aprovado, rejeitado ou pago. Os endpoints administrativos
+`GET /admin/reembolsos` e `PATCH /admin/reembolsos/{id}` não têm autenticação;
+use-os somente em uma demonstração ou ambiente local controlado.
 
 Para consultar status ou conexões, crie os registros correspondentes pela API e
 use os IDs retornados. Por exemplo, crie uma viação antes de criar uma passagem;

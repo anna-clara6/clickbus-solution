@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal, ROUND_HALF_UP
 
 from app.core.database import DatabaseSession
@@ -34,6 +34,22 @@ class ReembolsoService:
 
     def list_by_passagem(self, passagem_id: int) -> list[Reembolso]:
         return self._repository.by_passagem(passagem_id)
+
+    def list_all(self) -> list[Reembolso]:
+        return self._repository.list_all()
+
+    def update_status(self, reembolso_id: int, status: StatusReembolso) -> Reembolso:
+        entity = self._repository.get(reembolso_id)
+        if entity is None:
+            raise LookupError("Reembolso não encontrado")
+
+        entity.status = status
+        entity.processado_em = (
+            None if status == StatusReembolso.SOLICITADO else datetime.now()
+        )
+        self._repository.update_status(entity)
+        self._session.commit()
+        return entity
 
     def get(self, reembolso_id: int) -> Reembolso:
         entity = self._repository.get(reembolso_id)

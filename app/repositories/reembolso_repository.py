@@ -13,6 +13,19 @@ class ReembolsoRepository(Repository[Reembolso]):
             rows = cursor.fetchall()
         return [Reembolso(**row) for row in rows]
 
+    def list_all(self) -> list[Reembolso]:
+        with self._session.cursor() as cursor:
+            cursor.execute("SELECT * FROM reembolsos ORDER BY id")
+            rows = cursor.fetchall()
+        return [Reembolso(**row) for row in rows]
+
+    def update_status(self, entity: Reembolso) -> None:
+        with self._session.cursor() as cursor:
+            cursor.execute(
+                "UPDATE reembolsos SET status = %s, processado_em = %s WHERE id = %s",
+                (entity.status, entity.processado_em, entity.id),
+            )
+
     def get(self, entity_id: int) -> Reembolso | None:
         with self._session.cursor() as cursor:
             cursor.execute("SELECT * FROM reembolsos WHERE id = %s", (entity_id,))

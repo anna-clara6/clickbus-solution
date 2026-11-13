@@ -96,8 +96,18 @@ SEED_STATEMENTS = (
         """INSERT IGNORE INTO passagens
            (id, origem, destino, data_ida, data_volta, usuario_id, valor, status, viacao_id)
            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
-        [(1, "Brasília", "Ribeirão Preto", "2026-09-19 22:00:00", None,
-          "usuario-001", "156.40", "confirmada", 1)],
+        [
+            (1, "Brasília", "Ribeirão Preto", "2026-09-19 22:00:00", None,
+             "usuario-001", "156.40", "confirmada", 1),
+            (2, "São Paulo", "Rio de Janeiro", "2026-11-20 08:00:00", None,
+             "usuario-002", "220.00", "confirmada", 2),
+            (3, "Belo Horizonte", "Vitória", "2026-11-25 07:30:00", None,
+             "usuario-003", "180.00", "confirmada", 1),
+            (4, "Curitiba", "Florianópolis", "2026-11-30 09:00:00", None,
+             "usuario-004", "140.00", "reservada", 2),
+            (5, "Recife", "Maceió", "2026-12-05 06:00:00", None,
+             "usuario-005", "120.00", "confirmada", 1),
+        ],
     ),
     (
         """INSERT IGNORE INTO conexoes
@@ -106,14 +116,29 @@ SEED_STATEMENTS = (
         [
             (1, 1, "Brasília", "Franca", "2026-09-19 22:00:00", "2026-09-20 07:10:00", 1),
             (2, 1, "Franca", "Ribeirão Preto", "2026-09-20 06:45:00", "2026-09-20 07:40:00", 2),
+            (3, 2, "São Paulo", "Campinas", "2026-11-20 08:00:00", "2026-11-20 10:00:00", 1),
+            (4, 2, "Campinas", "Rio de Janeiro", "2026-11-20 10:45:00", "2026-11-20 18:00:00", 2),
+            (5, 3, "Belo Horizonte", "Vitória", "2026-11-25 07:30:00", "2026-11-25 15:00:00", 1),
+            (6, 4, "Curitiba", "Florianópolis", "2026-11-30 09:00:00", "2026-11-30 15:30:00", 1),
+            (7, 5, "Recife", "Maceió", "2026-12-05 06:00:00", "2026-12-05 10:00:00", 1),
         ],
     ),
     (
         """INSERT IGNORE INTO reembolsos
            (id, passagem_id, motivo, valor, status, solicitado_em, processado_em)
            VALUES (%s, %s, %s, %s, %s, %s, %s)""",
-        [(1, 1, "Perdi a conexão em Franca por atraso do primeiro ônibus", "156.40",
-          "solicitado", "2026-09-20 08:00:00", None)],
+        [
+            (1, 1, "Perdi a conexão em Franca por atraso do primeiro ônibus", "156.40",
+             "solicitado", "2026-09-20 08:00:00", None),
+            (2, 2, "Alteração dos planos da viagem", "220.00",
+             "aprovado", "2026-11-10 09:00:00", "2026-11-11 14:30:00"),
+            (3, 3, "Imprevisto pessoal antes da viagem", "180.00",
+             "solicitado", "2026-11-11 10:15:00", None),
+            (4, 4, "Cancelamento solicitado pelo passageiro", "140.00",
+             "rejeitado", "2026-11-08 16:20:00", "2026-11-09 11:00:00"),
+            (5, 5, "Desistência da viagem", "120.00",
+             "pago", "2026-11-01 08:40:00", "2026-11-03 12:00:00"),
+        ],
     ),
     (
         "INSERT IGNORE INTO solicitacoes (id, tipo, status) VALUES (%s, %s, %s)",

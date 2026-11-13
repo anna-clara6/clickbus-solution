@@ -22,6 +22,18 @@ function buscarStatusReembolso(reembolsoId) {
   return requisitarApi(`/reembolsos/${encodeURIComponent(reembolsoId)}`);
 }
 
+function listarReembolsosAdmin() {
+  return requisitarApi("/admin/reembolsos");
+}
+
+function atualizarStatusReembolsoAdmin(reembolsoId, status) {
+  return requisitarApi(`/admin/reembolsos/${encodeURIComponent(reembolsoId)}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
+}
+
 function simularReembolso(valorPassagem, dataViagem) {
   return requisitarApi("/reembolsos/simular", {
     method: "POST",

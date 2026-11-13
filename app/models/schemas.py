@@ -5,6 +5,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from app.models.entities import StatusReembolso
+
 
 class ViacaoCreate(BaseModel):
     nome: str = Field(min_length=2, max_length=120)
@@ -56,6 +58,15 @@ class ReembolsoResponse(ReembolsoCreate):
 
 class ReembolsoDetalheResponse(ReembolsoResponse):
     passagem: PassagemResponse
+
+
+class ReembolsoAdminResponse(ReembolsoResponse):
+    solicitado_em: datetime
+    processado_em: datetime | None
+
+
+class ReembolsoStatusUpdate(BaseModel):
+    status: StatusReembolso
 
 
 class ReembolsoSimulacaoRequest(BaseModel):
