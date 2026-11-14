@@ -42,6 +42,7 @@ function renderStatus(dados) {
   document.getElementById("status-atual").textContent = ROTULO_STATUS[status] ?? dados.status;
   document.getElementById("link-verificacao").href =
     `verificacao.html?reembolso=${encodeURIComponent(dados.id)}`;
+  document.getElementById("link-verificacao").hidden = true;
   renderTimeline(status);
 
   if (ultimoStatus !== null && ultimoStatus !== status) {

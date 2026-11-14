@@ -269,6 +269,10 @@ body {
   text-decoration: none;
 }
 
+.nav-link[hidden] {
+  display: none;
+}
+
 .nav-link:hover {
   text-decoration: underline;
 }
